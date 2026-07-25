@@ -1,0 +1,665 @@
+{
+  "version": 1,
+  "batches": [
+    {
+      "name": "showcaseBatch0ExcessBuy",
+      "input": {
+        "batchIndex": 0,
+        "startSequenceId": 0,
+        "messageCount": 8,
+        "slots": [
+          {
+            "slot": 0,
+            "messageType": 2,
+            "sequenceId": 0,
+            "accountId": 0,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 0,
+            "baseAmount": 50,
+            "limitTick": 109
+          },
+          {
+            "slot": 1,
+            "messageType": 2,
+            "sequenceId": 1,
+            "accountId": 1,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 0,
+            "baseAmount": 50,
+            "limitTick": 109
+          },
+          {
+            "slot": 2,
+            "messageType": 2,
+            "sequenceId": 2,
+            "accountId": 2,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 0,
+            "baseAmount": 50,
+            "limitTick": 109
+          },
+          {
+            "slot": 3,
+            "messageType": 2,
+            "sequenceId": 3,
+            "accountId": 3,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 0,
+            "baseAmount": 50,
+            "limitTick": 109
+          },
+          {
+            "slot": 4,
+            "messageType": 2,
+            "sequenceId": 4,
+            "accountId": 4,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 1,
+            "baseAmount": 20,
+            "limitTick": 109
+          },
+          {
+            "slot": 5,
+            "messageType": 2,
+            "sequenceId": 5,
+            "accountId": 5,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 1,
+            "baseAmount": 20,
+            "limitTick": 109
+          },
+          {
+            "slot": 6,
+            "messageType": 2,
+            "sequenceId": 6,
+            "accountId": 6,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 1,
+            "baseAmount": 20,
+            "limitTick": 109
+          },
+          {
+            "slot": 7,
+            "messageType": 2,
+            "sequenceId": 7,
+            "accountId": 7,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 1,
+            "baseAmount": 20,
+            "limitTick": 109
+          }
+        ]
+      },
+      "output": {
+        "oldStateRoot": {
+          "decimal": "7071633105518838241591574461399326375340121589417051538999520727165324367471",
+          "hex": "0x0fa2670a1a9ca428cb27f43e87ca532c53ae785158b0b890d686f87d608a166f"
+        },
+        "newStateRoot": {
+          "decimal": "6086084270354442980753428173331985779337986395570386999756935893240657765167",
+          "hex": "0x0d749a04178dbfc988e2d755bd94f7cdc69f5c230df663beddeaa211c4c8632f"
+        },
+        "batchCommitment": "0x829d4f636e384c907cc28c6c3dc3567930d4aa370c8086f3843b0c1421889cfb",
+        "batchCommitmentHi": "0x829d4f636e384c907cc28c6c3dc35679",
+        "batchCommitmentLo": "0x30d4aa370c8086f3843b0c1421889cfb",
+        "trace": {
+          "fundingStatus": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "filledBaseAmount": [
+            50,
+            50,
+            50,
+            20,
+            20,
+            20,
+            20,
+            20
+          ],
+          "clearingTick": 109,
+          "demand": 200,
+          "supply": 80,
+          "internalMatchedBase": 80,
+          "requestedResidualBase": 120,
+          "ammResidualDirection": 1,
+          "ammFilledBase": 90,
+          "unfilledResidualBase": 30
+        },
+        "postState": {
+          "accounts": [
+            {
+              "accountId": 0,
+              "baseBalance": 150,
+              "quoteBalance": 14500
+            },
+            {
+              "accountId": 1,
+              "baseBalance": 150,
+              "quoteBalance": 14500
+            },
+            {
+              "accountId": 2,
+              "baseBalance": 150,
+              "quoteBalance": 14500
+            },
+            {
+              "accountId": 3,
+              "baseBalance": 120,
+              "quoteBalance": 17800
+            },
+            {
+              "accountId": 4,
+              "baseBalance": 80,
+              "quoteBalance": 22200
+            },
+            {
+              "accountId": 5,
+              "baseBalance": 80,
+              "quoteBalance": 22200
+            },
+            {
+              "accountId": 6,
+              "baseBalance": 80,
+              "quoteBalance": 22200
+            },
+            {
+              "accountId": 7,
+              "baseBalance": 80,
+              "quoteBalance": 22200
+            }
+          ],
+          "amm": {
+            "baseReserve": 910,
+            "quoteReserve": 109900
+          },
+          "metadata": {
+            "processedBatchCount": 1,
+            "processedMessageCount": 8
+          }
+        },
+        "publicInputs": [
+          {
+            "index": 0,
+            "name": "batchIndex",
+            "decimal": "0"
+          },
+          {
+            "index": 1,
+            "name": "messageCount",
+            "decimal": "8"
+          },
+          {
+            "index": 2,
+            "name": "oldStateRoot",
+            "decimal": "7071633105518838241591574461399326375340121589417051538999520727165324367471"
+          },
+          {
+            "index": 3,
+            "name": "batchCommitmentHi",
+            "decimal": "173616440246887221300727243057261663865"
+          },
+          {
+            "index": 4,
+            "name": "batchCommitmentLo",
+            "decimal": "64907163102736104337104393313060429051"
+          },
+          {
+            "index": 5,
+            "name": "newStateRoot",
+            "decimal": "6086084270354442980753428173331985779337986395570386999756935893240657765167"
+          },
+          {
+            "index": 6,
+            "name": "clearingTick",
+            "decimal": "109"
+          },
+          {
+            "index": 7,
+            "name": "fundingStatus[0]",
+            "decimal": "2"
+          },
+          {
+            "index": 8,
+            "name": "fundingStatus[1]",
+            "decimal": "2"
+          },
+          {
+            "index": 9,
+            "name": "fundingStatus[2]",
+            "decimal": "2"
+          },
+          {
+            "index": 10,
+            "name": "fundingStatus[3]",
+            "decimal": "2"
+          },
+          {
+            "index": 11,
+            "name": "fundingStatus[4]",
+            "decimal": "2"
+          },
+          {
+            "index": 12,
+            "name": "fundingStatus[5]",
+            "decimal": "2"
+          },
+          {
+            "index": 13,
+            "name": "fundingStatus[6]",
+            "decimal": "2"
+          },
+          {
+            "index": 14,
+            "name": "fundingStatus[7]",
+            "decimal": "2"
+          },
+          {
+            "index": 15,
+            "name": "filledBaseAmount[0]",
+            "decimal": "50"
+          },
+          {
+            "index": 16,
+            "name": "filledBaseAmount[1]",
+            "decimal": "50"
+          },
+          {
+            "index": 17,
+            "name": "filledBaseAmount[2]",
+            "decimal": "50"
+          },
+          {
+            "index": 18,
+            "name": "filledBaseAmount[3]",
+            "decimal": "20"
+          },
+          {
+            "index": 19,
+            "name": "filledBaseAmount[4]",
+            "decimal": "20"
+          },
+          {
+            "index": 20,
+            "name": "filledBaseAmount[5]",
+            "decimal": "20"
+          },
+          {
+            "index": 21,
+            "name": "filledBaseAmount[6]",
+            "decimal": "20"
+          },
+          {
+            "index": 22,
+            "name": "filledBaseAmount[7]",
+            "decimal": "20"
+          },
+          {
+            "index": 23,
+            "name": "internalMatchedBase",
+            "decimal": "80"
+          },
+          {
+            "index": 24,
+            "name": "requestedResidualBase",
+            "decimal": "120"
+          },
+          {
+            "index": 25,
+            "name": "ammResidualDirection",
+            "decimal": "1"
+          },
+          {
+            "index": 26,
+            "name": "ammFilledBase",
+            "decimal": "90"
+          }
+        ]
+      }
+    },
+    {
+      "name": "showcaseBatch1ExcessSell",
+      "input": {
+        "batchIndex": 1,
+        "startSequenceId": 8,
+        "messageCount": 8,
+        "slots": [
+          {
+            "slot": 0,
+            "messageType": 2,
+            "sequenceId": 8,
+            "accountId": 0,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 0,
+            "baseAmount": 20,
+            "limitTick": 109
+          },
+          {
+            "slot": 1,
+            "messageType": 2,
+            "sequenceId": 9,
+            "accountId": 1,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 0,
+            "baseAmount": 20,
+            "limitTick": 109
+          },
+          {
+            "slot": 2,
+            "messageType": 2,
+            "sequenceId": 10,
+            "accountId": 2,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 0,
+            "baseAmount": 20,
+            "limitTick": 109
+          },
+          {
+            "slot": 3,
+            "messageType": 2,
+            "sequenceId": 11,
+            "accountId": 4,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 1,
+            "baseAmount": 60,
+            "limitTick": 109
+          },
+          {
+            "slot": 4,
+            "messageType": 2,
+            "sequenceId": 12,
+            "accountId": 5,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 1,
+            "baseAmount": 40,
+            "limitTick": 109
+          },
+          {
+            "slot": 5,
+            "messageType": 2,
+            "sequenceId": 13,
+            "accountId": 6,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 1,
+            "baseAmount": 40,
+            "limitTick": 109
+          },
+          {
+            "slot": 6,
+            "messageType": 2,
+            "sequenceId": 14,
+            "accountId": 7,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 1,
+            "baseAmount": 40,
+            "limitTick": 109
+          },
+          {
+            "slot": 7,
+            "messageType": 2,
+            "sequenceId": 15,
+            "accountId": 4,
+            "tokenId": 0,
+            "depositAmount": 0,
+            "side": 1,
+            "baseAmount": 50,
+            "limitTick": 109
+          }
+        ]
+      },
+      "output": {
+        "oldStateRoot": {
+          "decimal": "6086084270354442980753428173331985779337986395570386999756935893240657765167",
+          "hex": "0x0d749a04178dbfc988e2d755bd94f7cdc69f5c230df663beddeaa211c4c8632f"
+        },
+        "newStateRoot": {
+          "decimal": "6454644218358115299954897593039323931065349730735171915711406264296088160693",
+          "hex": "0x0e4532fc5a323fdef839c745deadca63ccd7f68c6f152c968e487d2f4cde49b5"
+        },
+        "batchCommitment": "0x6465c2f57bbb2d904b86b8b882a0d4b346f24e6c4503ba9bc75e3254b4634d15",
+        "batchCommitmentHi": "0x6465c2f57bbb2d904b86b8b882a0d4b3",
+        "batchCommitmentLo": "0x46f24e6c4503ba9bc75e3254b4634d15",
+        "trace": {
+          "fundingStatus": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            1
+          ],
+          "filledBaseAmount": [
+            20,
+            20,
+            20,
+            60,
+            40,
+            40,
+            9,
+            0
+          ],
+          "clearingTick": 109,
+          "demand": 60,
+          "supply": 180,
+          "internalMatchedBase": 60,
+          "requestedResidualBase": 120,
+          "ammResidualDirection": 2,
+          "ammFilledBase": 89,
+          "unfilledResidualBase": 31
+        },
+        "postState": {
+          "accounts": [
+            {
+              "accountId": 0,
+              "baseBalance": 170,
+              "quoteBalance": 12300
+            },
+            {
+              "accountId": 1,
+              "baseBalance": 170,
+              "quoteBalance": 12300
+            },
+            {
+              "accountId": 2,
+              "baseBalance": 170,
+              "quoteBalance": 12300
+            },
+            {
+              "accountId": 3,
+              "baseBalance": 120,
+              "quoteBalance": 17800
+            },
+            {
+              "accountId": 4,
+              "baseBalance": 20,
+              "quoteBalance": 28800
+            },
+            {
+              "accountId": 5,
+              "baseBalance": 40,
+              "quoteBalance": 26600
+            },
+            {
+              "accountId": 6,
+              "baseBalance": 40,
+              "quoteBalance": 26600
+            },
+            {
+              "accountId": 7,
+              "baseBalance": 71,
+              "quoteBalance": 23190
+            }
+          ],
+          "amm": {
+            "baseReserve": 999,
+            "quoteReserve": 100110
+          },
+          "metadata": {
+            "processedBatchCount": 2,
+            "processedMessageCount": 16
+          }
+        },
+        "publicInputs": [
+          {
+            "index": 0,
+            "name": "batchIndex",
+            "decimal": "1"
+          },
+          {
+            "index": 1,
+            "name": "messageCount",
+            "decimal": "8"
+          },
+          {
+            "index": 2,
+            "name": "oldStateRoot",
+            "decimal": "6086084270354442980753428173331985779337986395570386999756935893240657765167"
+          },
+          {
+            "index": 3,
+            "name": "batchCommitmentHi",
+            "decimal": "133451175797859469804245737501660075187"
+          },
+          {
+            "index": 4,
+            "name": "batchCommitmentLo",
+            "decimal": "94304086150659149449121176328910097685"
+          },
+          {
+            "index": 5,
+            "name": "newStateRoot",
+            "decimal": "6454644218358115299954897593039323931065349730735171915711406264296088160693"
+          },
+          {
+            "index": 6,
+            "name": "clearingTick",
+            "decimal": "109"
+          },
+          {
+            "index": 7,
+            "name": "fundingStatus[0]",
+            "decimal": "2"
+          },
+          {
+            "index": 8,
+            "name": "fundingStatus[1]",
+            "decimal": "2"
+          },
+          {
+            "index": 9,
+            "name": "fundingStatus[2]",
+            "decimal": "2"
+          },
+          {
+            "index": 10,
+            "name": "fundingStatus[3]",
+            "decimal": "2"
+          },
+          {
+            "index": 11,
+            "name": "fundingStatus[4]",
+            "decimal": "2"
+          },
+          {
+            "index": 12,
+            "name": "fundingStatus[5]",
+            "decimal": "2"
+          },
+          {
+            "index": 13,
+            "name": "fundingStatus[6]",
+            "decimal": "2"
+          },
+          {
+            "index": 14,
+            "name": "fundingStatus[7]",
+            "decimal": "1"
+          },
+          {
+            "index": 15,
+            "name": "filledBaseAmount[0]",
+            "decimal": "20"
+          },
+          {
+            "index": 16,
+            "name": "filledBaseAmount[1]",
+            "decimal": "20"
+          },
+          {
+            "index": 17,
+            "name": "filledBaseAmount[2]",
+            "decimal": "20"
+          },
+          {
+            "index": 18,
+            "name": "filledBaseAmount[3]",
+            "decimal": "60"
+          },
+          {
+            "index": 19,
+            "name": "filledBaseAmount[4]",
+            "decimal": "40"
+          },
+          {
+            "index": 20,
+            "name": "filledBaseAmount[5]",
+            "decimal": "40"
+          },
+          {
+            "index": 21,
+            "name": "filledBaseAmount[6]",
+            "decimal": "9"
+          },
+          {
+            "index": 22,
+            "name": "filledBaseAmount[7]",
+            "decimal": "0"
+          },
+          {
+            "index": 23,
+            "name": "internalMatchedBase",
+            "decimal": "60"
+          },
+          {
+            "index": 24,
+            "name": "requestedResidualBase",
+            "decimal": "120"
+          },
+          {
+            "index": 25,
+            "name": "ammResidualDirection",
+            "decimal": "2"
+          },
+          {
+            "index": 26,
+            "name": "ammFilledBase",
+            "decimal": "89"
+          }
+        ]
+      }
+    }
+  ]
+}

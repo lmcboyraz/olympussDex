@@ -1,10 +1,11 @@
 # FIFO-Clear protocol primitives
 
-The repository contains the Milestone 0 BN254 Groth16 toolchain spike and the
-Milestone 1 canonical protocol primitives. Milestone 1 defines message
-validation, fixed-width Keccak batch commitments, a Poseidon2 Merkle state, and
-the deterministic genesis fixture. It does not implement clearing, settlement,
-production inbox contracts, or the final FIFO-Clear circuit.
+The repository contains the Milestone 0 BN254 Groth16 toolchain spike,
+Milestone 1 canonical protocol primitives, and the Milestone 2 deterministic Go
+reference engine. The reference engine implements sequential funding,
+FIFO-Clear candidate selection, constant-product AMM residual execution,
+strict FIFO allocation, settlement, and conservation checks. It is not the
+final FIFO-Clear circuit or a production inbox/artifact pipeline.
 
 ## Pinned toolchain
 
@@ -21,18 +22,24 @@ Install the pinned Go and Foundry releases and ensure `go`, `forge`, `cast`,
 
 ```text
 make test
+make test-engine
 make test-primitives
 make test-solidity-primitives
 make generate-vectors
+make generate-engine-vectors
 make proof-spike
 make test-anvil
 ```
 
 `make test` runs every Go test, including the unchanged proof spike.
+`make test-engine` runs the reference engine, AMM, clearing, and tracked
+showcase-vector tests.
 `make test-primitives` runs only protocol, state, and golden-vector Go tests.
 `make test-solidity-primitives` checks the Solidity test harness against the
 tracked Go vectors. `make generate-vectors` is the only command that rewrites
 `testdata/protocol_vectors.json`; normal tests only read and compare it.
+Likewise, `make generate-engine-vectors` is the only command that rewrites
+`testdata/engine_vectors.json`.
 
 `make proof-spike` compiles the circuit, runs Groth16 setup, creates a witness
 and proof, verifies the proof in Go, and generates the Solidity verifier plus
@@ -81,6 +88,20 @@ Internal-node preimages also include their zero-based tree level.
 
 The tracked vectors under `testdata/` contain every genesis leaf, the genesis
 root, a Merkle proof, and full/partial batch commitment fixtures.
+
+## Reference engine
+
+`internal/engine.Execute` accepts a pre-state and a canonical protocol batch.
+It validates batch and metadata chaining, processes deposits and reservations
+in slot order, evaluates only active-order limit ticks against the pre-batch
+AMM, allocates the winning liquidity in strict FIFO order, settles/refunds all
+reservations, updates metadata, and verifies token conservation. Its result
+maps directly to the canonical 27-public-input order.
+
+The AMM residual search is logarithmic and all reserve-product comparisons use
+unsigned 128-bit arithmetic. The exact two-batch showcase states, roots,
+commitments, traces, and public inputs are tracked in
+`testdata/engine_vectors.json`.
 
 ## Milestone 0 spike constraint
 
