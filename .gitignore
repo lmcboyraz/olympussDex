@@ -1,0 +1,20 @@
+# Go outputs
+*.test
+coverage.out
+
+# Proof-spike and Foundry outputs
+/build/
+/contracts/generated/
+/cache/
+/out/
+/broadcast/
+
+# Cryptographic build artifacts must never be committed.
+*.r1cs
+*.pk
+*.vk
+*.proof
+proving.key
+verifying.key
+proof.bin
+public-witness.bin
