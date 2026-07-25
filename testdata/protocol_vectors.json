@@ -1,0 +1,436 @@
+{
+  "version": 1,
+  "domains": {
+    "batchEncodingVersion": 1,
+    "batchDomainSeparator": "0x4649464f5f434c4541525f42415443485f563100000000000000000000000000",
+    "poseidon2Parameters": "bn254/fr/poseidon2.NewMerkleDamgardHasher; Poseidon2-BN254[t=2,rF=6,rP=50,d=5]",
+    "poseidon2DomainVersion": 1,
+    "accountLeaf": {
+      "decimal": "257",
+      "hex": "0x0000000000000000000000000000000000000000000000000000000000000101"
+    },
+    "ammLeaf": {
+      "decimal": "258",
+      "hex": "0x0000000000000000000000000000000000000000000000000000000000000102"
+    },
+    "metadataLeaf": {
+      "decimal": "259",
+      "hex": "0x0000000000000000000000000000000000000000000000000000000000000103"
+    },
+    "emptyLeaf": {
+      "decimal": "260",
+      "hex": "0x0000000000000000000000000000000000000000000000000000000000000104"
+    },
+    "internalNode": {
+      "decimal": "261",
+      "hex": "0x0000000000000000000000000000000000000000000000000000000000000105"
+    }
+  },
+  "genesis": {
+    "accounts": [
+      {
+        "index": 0,
+        "kind": "ACCOUNT",
+        "hash": {
+          "decimal": "4495050793483062941295450669336481807494667879289865236756412376232190434984",
+          "hex": "0x09f01bcc822656d8061e085e60a8a9d41f0bd2c85c90b210e94e1b61c9565ea8"
+        }
+      },
+      {
+        "index": 1,
+        "kind": "ACCOUNT",
+        "hash": {
+          "decimal": "18303363708956693927245085401929157921863907231789913635059923070957931906797",
+          "hex": "0x2877563479adfbca889a603d0ea1173e2ce796cfd3ca88206a71bccc09eec6ed"
+        }
+      },
+      {
+        "index": 2,
+        "kind": "ACCOUNT",
+        "hash": {
+          "decimal": "11659839056528328623151895453329449410329614822108516021941019199358184400827",
+          "hex": "0x19c73c2b71ebb6ee78d84780235c06f2a710016efcc0d5cdc3cff2b05e3327bb"
+        }
+      },
+      {
+        "index": 3,
+        "kind": "ACCOUNT",
+        "hash": {
+          "decimal": "2550561846531823032596073164953745318403396287872844629456230637009406577823",
+          "hex": "0x05a3911ce37e3df028a9dd466b7587db0a8064a024f6810832e7c37c4efccc9f"
+        }
+      },
+      {
+        "index": 4,
+        "kind": "ACCOUNT",
+        "hash": {
+          "decimal": "7993440749488360631690086760276030302756129907955410559783249242635102796167",
+          "hex": "0x11ac208bee7bd455f4c6410d0a7f52ca28c046d1d2f534165002226d546b3987"
+        }
+      },
+      {
+        "index": 5,
+        "kind": "ACCOUNT",
+        "hash": {
+          "decimal": "7870391832982520860137410386362472279407128918182136013942225646324295551025",
+          "hex": "0x11667be1f3c29a3e9b2e04e9840ca89f47b9d7b8588151216a8240bd249a4831"
+        }
+      },
+      {
+        "index": 6,
+        "kind": "ACCOUNT",
+        "hash": {
+          "decimal": "12688937538949355585876765030845264393242756252471132457534854598296691605981",
+          "hex": "0x1c0daf23a6cee791436e506fc24ef9c458485e04a80f64699fea83edee2d01dd"
+        }
+      },
+      {
+        "index": 7,
+        "kind": "ACCOUNT",
+        "hash": {
+          "decimal": "11850077999225658967808291889363279176383914218896065209197689870290741530209",
+          "hex": "0x1a32e80e022f5aa1ec37e1d5439b62a442c9e0d87b01d8c96c22adcac6528e61"
+        }
+      }
+    ],
+    "amm": {
+      "index": 8,
+      "kind": "AMM",
+      "hash": {
+        "decimal": "18302112827530725213260727534369859596622286712114138207226873634158749027594",
+        "hex": "0x2876a0f6b45b802ff72d3ca8282e736e1153004cb5699183f5421602638a0d0a"
+      }
+    },
+    "metadata": {
+      "index": 9,
+      "kind": "METADATA",
+      "hash": {
+        "decimal": "700280661176402995070515003202180258373236485619843295028395240753261793393",
+        "hex": "0x018c58455b3ef9c05d922906bc15486fe3d546afd552c970fd327722373d5071"
+      }
+    },
+    "emptyLeaves": [
+      {
+        "index": 10,
+        "kind": "EMPTY",
+        "hash": {
+          "decimal": "3082278957711183185268823911640169835504311893980900807055252977234865096426",
+          "hex": "0x06d08210ae46c4e34ecc2a39943e9bdba1edb538a144c21cc3807ba7914106ea"
+        }
+      },
+      {
+        "index": 11,
+        "kind": "EMPTY",
+        "hash": {
+          "decimal": "5514101220747794466835312514783530831580034737050441958115306296831667480039",
+          "hex": "0x0c30dee5a29665afddbd1c7d88326a2030a560bfe51275fa3e7d3639ad0a25e7"
+        }
+      },
+      {
+        "index": 12,
+        "kind": "EMPTY",
+        "hash": {
+          "decimal": "17056395956999109852454852611018846755425227950569003900092546801186039812270",
+          "hex": "0x25b593f7ec3046f641753bb61d86e10a1ac4805b9a3a9e1d4942255af61a50ae"
+        }
+      },
+      {
+        "index": 13,
+        "kind": "EMPTY",
+        "hash": {
+          "decimal": "5364115200562795135737537873356359201623300449444865355013549467291602517845",
+          "hex": "0x0bdbfb4af30101a515d8c74f9c72ce176696db810a63399fb2a168ac049dff55"
+        }
+      },
+      {
+        "index": 14,
+        "kind": "EMPTY",
+        "hash": {
+          "decimal": "7479537341483585994370557371444009540546139671035083761208347437395727354255",
+          "hex": "0x108944a31cff5e4de402b9f7eddb2af272e56c79b86bf33f182f968defe4098f"
+        }
+      },
+      {
+        "index": 15,
+        "kind": "EMPTY",
+        "hash": {
+          "decimal": "10665686333242399575978103102506928725543948203021264876333444099381481387647",
+          "hex": "0x179490857c53df48c37039e2b93ff72f099e9428f4945020c81eca152ebf367f"
+        }
+      }
+    ],
+    "liabilities": {
+      "base": 1800,
+      "quote": 260000
+    },
+    "root": {
+      "decimal": "7071633105518838241591574461399326375340121589417051538999520727165324367471",
+      "hex": "0x0fa2670a1a9ca428cb27f43e87ca532c53ae785158b0b890d686f87d608a166f"
+    }
+  },
+  "merkleProof": {
+    "index": 0,
+    "leaf": {
+      "decimal": "4495050793483062941295450669336481807494667879289865236756412376232190434984",
+      "hex": "0x09f01bcc822656d8061e085e60a8a9d41f0bd2c85c90b210e94e1b61c9565ea8"
+    },
+    "siblings": [
+      {
+        "decimal": "18303363708956693927245085401929157921863907231789913635059923070957931906797",
+        "hex": "0x2877563479adfbca889a603d0ea1173e2ce796cfd3ca88206a71bccc09eec6ed"
+      },
+      {
+        "decimal": "6701153592563023358664413563913386174485572002509472643014654648636032406445",
+        "hex": "0x0ed0b7f138ec81143ea85a7e12efcd2c1483f4c4458c82f0881fdeff3ebfd3ad"
+      },
+      {
+        "decimal": "8754098194613112647232034009440557370027523030827425981330632818755212855958",
+        "hex": "0x135aa4dcabfb7bd1346e375b1c74a4c2c2607ebf421d2d339005ddf53ab2ca96"
+      },
+      {
+        "decimal": "13883697178487393251710651061664363495049195483852484717085686922046463682875",
+        "hex": "0x1eb1e4e5aff0f376f6f223909d86c9c0408a8d751cb8a5e42af241ea962e293b"
+      }
+    ],
+    "root": {
+      "decimal": "7071633105518838241591574461399326375340121589417051538999520727165324367471",
+      "hex": "0x0fa2670a1a9ca428cb27f43e87ca532c53ae785158b0b890d686f87d608a166f"
+    }
+  },
+  "batches": {
+    "full": {
+      "batchIndex": 7,
+      "startSequenceId": 100,
+      "messageCount": 8,
+      "slots": [
+        {
+          "messageType": 1,
+          "messageTypeName": "DEPOSIT",
+          "sequenceId": 100,
+          "accountId": 0,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 500,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 0,
+          "limitTick": 0
+        },
+        {
+          "messageType": 1,
+          "messageTypeName": "DEPOSIT",
+          "sequenceId": 101,
+          "accountId": 1,
+          "tokenId": 1,
+          "tokenIdName": "QUOTE",
+          "depositAmount": 1250,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 0,
+          "limitTick": 0
+        },
+        {
+          "messageType": 2,
+          "messageTypeName": "ORDER",
+          "sequenceId": 102,
+          "accountId": 0,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 0,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 10,
+          "limitTick": 99
+        },
+        {
+          "messageType": 2,
+          "messageTypeName": "ORDER",
+          "sequenceId": 103,
+          "accountId": 1,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 0,
+          "side": 1,
+          "sideName": "SELL",
+          "baseAmount": 7,
+          "limitTick": 101
+        },
+        {
+          "messageType": 1,
+          "messageTypeName": "DEPOSIT",
+          "sequenceId": 104,
+          "accountId": 2,
+          "tokenId": 1,
+          "tokenIdName": "QUOTE",
+          "depositAmount": 999,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 0,
+          "limitTick": 0
+        },
+        {
+          "messageType": 2,
+          "messageTypeName": "ORDER",
+          "sequenceId": 105,
+          "accountId": 3,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 0,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 3,
+          "limitTick": 100
+        },
+        {
+          "messageType": 1,
+          "messageTypeName": "DEPOSIT",
+          "sequenceId": 106,
+          "accountId": 7,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 1,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 0,
+          "limitTick": 0
+        },
+        {
+          "messageType": 2,
+          "messageTypeName": "ORDER",
+          "sequenceId": 107,
+          "accountId": 7,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 0,
+          "side": 1,
+          "sideName": "SELL",
+          "baseAmount": 2,
+          "limitTick": 255
+        }
+      ],
+      "canonicalBytes": "0x4649464f5f434c4541525f42415443485f5631000000000000000000000000000000000000000007000000000000006408010000000000000064000000000000000001f4000000000000010000000000000065010100000000000004e200000000000002000000000000006600000000000000000000000000000a6302000000000000006701000000000000000000010000000765010000000000000068020100000000000003e70000000000000200000000000000690300000000000000000000000000036401000000000000006a0700000000000000000100000000000002000000000000006b070000000000000000000100000002ff",
+      "keccakDigest": "0xaba4244e6e4f713cfdf51822bd5dd95758d26d61252986631dd6cf000cc5eb5e",
+      "commitmentHi": "0xaba4244e6e4f713cfdf51822bd5dd957",
+      "commitmentHiDecimal": "228150260344702124542997884258790267223",
+      "commitmentLo": "0x58d26d61252986631dd6cf000cc5eb5e",
+      "commitmentLoDecimal": "118064664448644618480723850997881236318"
+    },
+    "partial": {
+      "batchIndex": 8,
+      "startSequenceId": 108,
+      "messageCount": 1,
+      "slots": [
+        {
+          "messageType": 1,
+          "messageTypeName": "DEPOSIT",
+          "sequenceId": 108,
+          "accountId": 4,
+          "tokenId": 1,
+          "tokenIdName": "QUOTE",
+          "depositAmount": 42,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 0,
+          "limitTick": 0
+        },
+        {
+          "messageType": 0,
+          "messageTypeName": "EMPTY",
+          "sequenceId": 0,
+          "accountId": 0,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 0,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 0,
+          "limitTick": 0
+        },
+        {
+          "messageType": 0,
+          "messageTypeName": "EMPTY",
+          "sequenceId": 0,
+          "accountId": 0,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 0,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 0,
+          "limitTick": 0
+        },
+        {
+          "messageType": 0,
+          "messageTypeName": "EMPTY",
+          "sequenceId": 0,
+          "accountId": 0,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 0,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 0,
+          "limitTick": 0
+        },
+        {
+          "messageType": 0,
+          "messageTypeName": "EMPTY",
+          "sequenceId": 0,
+          "accountId": 0,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 0,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 0,
+          "limitTick": 0
+        },
+        {
+          "messageType": 0,
+          "messageTypeName": "EMPTY",
+          "sequenceId": 0,
+          "accountId": 0,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 0,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 0,
+          "limitTick": 0
+        },
+        {
+          "messageType": 0,
+          "messageTypeName": "EMPTY",
+          "sequenceId": 0,
+          "accountId": 0,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 0,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 0,
+          "limitTick": 0
+        },
+        {
+          "messageType": 0,
+          "messageTypeName": "EMPTY",
+          "sequenceId": 0,
+          "accountId": 0,
+          "tokenId": 0,
+          "tokenIdName": "BASE",
+          "depositAmount": 0,
+          "side": 0,
+          "sideName": "BUY",
+          "baseAmount": 0,
+          "limitTick": 0
+        }
+      ],
+      "canonicalBytes": "0x4649464f5f434c4541525f42415443485f5631000000000000000000000000000000000000000008000000000000006c0101000000000000006c0401000000000000002a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "keccakDigest": "0x934ea2ece04cf5c3028eed942c100e206f45ce88f09b01ea7bc392a92dd11113",
+      "commitmentHi": "0x934ea2ece04cf5c3028eed942c100e20",
+      "commitmentHiDecimal": "195804819052968175948237118609457942048",
+      "commitmentLo": "0x6f45ce88f09b01ea7bc392a92dd11113",
+      "commitmentLoDecimal": "147906765041236814089734246869723320595"
+    }
+  }
+}

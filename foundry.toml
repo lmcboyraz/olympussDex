@@ -1,7 +1,9 @@
 [profile.default]
 src = "contracts"
+test = "test/solidity"
 out = "build/foundry"
 cache_path = "build/foundry-cache"
 solc_version = "0.8.35"
 optimizer = true
 optimizer_runs = 200
+fs_permissions = [{ access = "read", path = "./testdata" }]
