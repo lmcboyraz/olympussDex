@@ -155,3 +155,22 @@ func (g Gadgets) Mul64To128(
 	g.AssertUnsigned(result, 128)
 	return result
 }
+
+// MulBounded returns an exact product with independently documented operand
+// and result widths. The total operand width must stay below the field width.
+func (g Gadgets) MulBounded(
+	left frontend.Variable,
+	leftWidth int,
+	right frontend.Variable,
+	rightWidth int,
+	resultWidth int,
+) frontend.Variable {
+	if leftWidth+rightWidth > 253 {
+		panic("MulBounded operands may wrap the native field")
+	}
+	g.AssertUnsigned(left, leftWidth)
+	g.AssertUnsigned(right, rightWidth)
+	result := g.api.Mul(left, right)
+	g.AssertUnsigned(result, resultWidth)
+	return result
+}

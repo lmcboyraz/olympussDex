@@ -31,9 +31,28 @@ func ConstrainBatchBinding(
 	publicCommitmentHigh frontend.Variable,
 	publicCommitmentLow frontend.Variable,
 ) error {
-	_, err := constrainBatch(api, batch)
+	_, err := constrainBatchBinding(
+		api,
+		batch,
+		publicBatchIndex,
+		publicMessageCount,
+		publicCommitmentHigh,
+		publicCommitmentLow,
+	)
+	return err
+}
+
+func constrainBatchBinding(
+	api frontend.API,
+	batch BatchWitness,
+	publicBatchIndex frontend.Variable,
+	publicMessageCount frontend.Variable,
+	publicCommitmentHigh frontend.Variable,
+	publicCommitmentLow frontend.Variable,
+) ([protocol.MaxSlots]messageFlags, error) {
+	flags, err := constrainBatch(api, batch)
 	if err != nil {
-		return err
+		return flags, err
 	}
 	g := NewGadgets(api)
 	g.AssertUnsigned(publicBatchIndex, 61)
@@ -45,23 +64,23 @@ func ConstrainBatchBinding(
 
 	encoded, err := encodeBatch(api, batch)
 	if err != nil {
-		return err
+		return flags, err
 	}
 	hasher, err := sha3.NewLegacyKeccak256(api)
 	if err != nil {
-		return fmt.Errorf("create Legacy Keccak-256 circuit: %w", err)
+		return flags, fmt.Errorf("create Legacy Keccak-256 circuit: %w", err)
 	}
 	hasher.Write(encoded)
 	digest := hasher.Sum()
 	bytesAPI, err := uints.NewBytes(api)
 	if err != nil {
-		return fmt.Errorf("create byte API: %w", err)
+		return flags, fmt.Errorf("create byte API: %w", err)
 	}
 	high := packBigEndian(api, bytesAPI, digest[:16])
 	low := packBigEndian(api, bytesAPI, digest[16:])
 	api.AssertIsEqual(high, publicCommitmentHigh)
 	api.AssertIsEqual(low, publicCommitmentLow)
-	return nil
+	return flags, nil
 }
 
 func constrainBatch(api frontend.API, batch BatchWitness) ([protocol.MaxSlots]messageFlags, error) {
