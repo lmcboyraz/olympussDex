@@ -1,11 +1,13 @@
-# FIFO-Clear protocol primitives
+# FIFO-Clear production circuit
 
 The repository contains the Milestone 0 BN254 Groth16 toolchain spike,
 Milestone 1 canonical protocol primitives, and the Milestone 2 deterministic Go
 reference engine. The reference engine implements sequential funding,
 FIFO-Clear candidate selection, constant-product AMM residual execution,
-strict FIFO allocation, settlement, and conservation checks. It is not the
-final FIFO-Clear circuit or a production inbox/artifact pipeline.
+strict FIFO allocation, settlement, and conservation checks. Milestone 3 adds
+the production gnark circuit that independently constrains the same canonical
+transition. Production inbox, deployment, and persistent proving-key
+management remain out of scope.
 
 ## Pinned toolchain
 
@@ -24,30 +26,39 @@ Install the pinned Go and Foundry releases and ensure `go`, `forge`, `cast`,
 make test
 make test-engine
 make test-primitives
+make test-circuit
 make test-solidity-primitives
 make generate-vectors
 make generate-engine-vectors
 make proof-spike
+make production-proof
 make test-anvil
+make test-production-anvil
 ```
 
-`make test` runs every Go test, including the unchanged proof spike.
+`make test` runs every Go test, including the unchanged proof spike and the
+production proof pipeline.
 `make test-engine` runs the reference engine, AMM, clearing, and tracked
 showcase-vector tests.
 `make test-primitives` runs only protocol, state, and golden-vector Go tests.
+`make test-circuit` runs the production constraint, adversarial,
+differential, schema, Groth16, and Solidity-ABI tests.
 `make test-solidity-primitives` checks the Solidity test harness against the
 tracked Go vectors. `make generate-vectors` is the only command that rewrites
 `testdata/protocol_vectors.json`; normal tests only read and compare it.
 Likewise, `make generate-engine-vectors` is the only command that rewrites
 `testdata/engine_vectors.json`.
 
-`make proof-spike` compiles the circuit, runs Groth16 setup, creates a witness
-and proof, verifies the proof in Go, and generates the Solidity verifier plus
-the exact calldata consumed by `make test-anvil`.
+`make proof-spike` retains the Milestone 0 toolchain-only circuit and commands.
+It does not implement FIFO-Clear. `make production-proof` compiles the
+Milestone 3 circuit, runs a disposable Groth16 setup, creates the showcase
+witness and proof, verifies the proof plus a tampered-public-input rejection in
+Go, and generates `ProductionVerifier.sol` with commitment-aware calldata.
 
-`make test-anvil` builds and deploys that verifier to a temporary local Anvil
-node. It checks that the generated proof succeeds and that changing
-`batchIndex` while keeping the same proof is rejected.
+`make test-production-anvil` deploys the generated production verifier to a
+temporary Anvil node. It accepts the valid proof, then independently mutates
+each of the 27 public inputs and requires every call to revert. `make
+test-anvil` remains the smaller Milestone 0 smoke test.
 
 All R1CS, keys, witnesses, proofs, generated Solidity, calldata, Foundry output,
 and Anvil logs are disposable ignored artifacts.
@@ -112,10 +123,32 @@ only `make generate-engine-vectors` rewrites it. Hand-authored showcase
 assertions independently pin the expected balances, AMM reserves, metadata,
 roots, funding statuses, and fills.
 
-## Milestone 0 spike constraint
+## Milestone 3 production constraint
+
+The production circuit lives in `internal/circuit`. Its explicit private
+witness is exactly the 20-field pre-state and 67-field canonical batch. It
+range-checks every 8/32/61/64/128-bit value; recreates the depth-4 Poseidon2
+state tree and 249-byte Legacy Keccak commitment; applies deposits and funding
+reservations in slot order; proves the maximum constant-product AMM residual;
+selects `F`, `M`, spot-distance, and lowest-tick winners; allocates strict FIFO
+fills; settles/refunds exact-price reservations; enforces global liability
+caps and conservation; advances metadata; and recreates the post-state root.
+
+The AMM residual hint supplies only a derived candidate value. The circuit
+constrains its bounds, reserve arithmetic, `postK >= preK`, and maximality by
+requiring the next residual either to violate reserve arithmetic or
+`postK >= preK`.
+
+All 27 public inputs are held in one public array and interpreted exclusively
+through `internal/publicinputs/public_inputs.go`. Schema tests require exactly
+27 public fields and exactly 87 explicit private fields. Constraint and input
+counts are printed by `make production-proof`.
+
+## Milestone 0 spike
 
 The canonical public-input order is defined only in
 `internal/publicinputs/public_inputs.go`. The spike constrains input 0 to the
 square of a private secret. Each input from 1 through 26 must equal the previous
 public input plus its own index. This binds every public input without
-implementing protocol logic.
+implementing protocol logic; it is deliberately separate from the production
+FIFO-Clear circuit and command.

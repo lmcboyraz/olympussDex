@@ -273,15 +273,94 @@ func TestProductionCircuitBoundedDeterministicDifferential(t *testing.T) {
 				)
 			}
 		}
-		batch := batchWithMessages(messages...)
-		assignment, _, err := NewAssignment(pre, batch)
+		validBatch := batchWithMessages(messages...)
+		assignment, _, err := NewAssignment(pre, validBatch)
 		if err != nil {
 			t.Fatalf("case %d engine rejected generated canonical transition: %v", caseIndex, err)
 		}
-		if err := test.IsSolved(&Circuit{}, assignment, ecc.BN254.ScalarField()); err != nil {
-			t.Fatalf("case %d circuit disagreed with engine: %v", caseIndex, err)
+		candidate := validBatch
+		switch caseIndex % 3 {
+		case 1:
+			candidate.BatchIndex++
+			assignment = rebindAssignmentBatch(t, assignment, candidate)
+		case 2:
+			candidate.StartSequenceID++
+			for slot := 0; slot < int(candidate.MessageCount); slot++ {
+				candidate.Slots[slot].SequenceID++
+			}
+			assignment = rebindAssignmentBatch(t, assignment, candidate)
+		}
+		_, engineErr := engine.Execute(pre, candidate)
+		circuitErr := test.IsSolved(&Circuit{}, assignment, ecc.BN254.ScalarField())
+		if (engineErr == nil) != (circuitErr == nil) {
+			t.Fatalf(
+				"case %d acceptance mismatch: engine=%v circuit=%v",
+				caseIndex,
+				engineErr,
+				circuitErr,
+			)
 		}
 	}
+}
+
+func TestProductionCircuitRejectsWrongMetadataBatchChaining(t *testing.T) {
+	pre := state.GenesisFixture()
+	validBatch := engine.ShowcaseBatch0()
+	validAssignment, _, err := NewAssignment(pre, validBatch)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := map[string]protocol.Batch{
+		"batch index": func() protocol.Batch {
+			batch := validBatch
+			batch.BatchIndex++
+			return batch
+		}(),
+		"start sequence": func() protocol.Batch {
+			batch := validBatch
+			batch.StartSequenceID++
+			for slot := 0; slot < int(batch.MessageCount); slot++ {
+				batch.Slots[slot].SequenceID++
+			}
+			return batch
+		}(),
+	}
+	for name, batch := range tests {
+		t.Run(name, func(t *testing.T) {
+			if _, err := engine.Execute(pre, batch); err == nil {
+				t.Fatal("reference engine unexpectedly accepted broken metadata chaining")
+			}
+			assignment := rebindAssignmentBatch(t, validAssignment, batch)
+			if err := test.IsSolved(&Circuit{}, assignment, ecc.BN254.ScalarField()); err == nil {
+				t.Fatal("circuit unexpectedly accepted broken metadata chaining")
+			}
+		})
+	}
+}
+
+func rebindAssignmentBatch(
+	t *testing.T,
+	assignment *Circuit,
+	batch protocol.Batch,
+) *Circuit {
+	t.Helper()
+	rebound := *assignment
+	rebound.Batch = AssignBatch(batch)
+	rebound.Public.Inputs[publicinputs.BatchIndex] = new(big.Int).SetUint64(batch.BatchIndex)
+	rebound.Public.Inputs[publicinputs.MessageCount] = new(big.Int).SetUint64(
+		uint64(batch.MessageCount),
+	)
+	commitment, err := protocol.CommitBatch(batch)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rebound.Public.Inputs[publicinputs.BatchCommitmentHi] = new(big.Int).SetBytes(
+		commitment.Hi[:],
+	)
+	rebound.Public.Inputs[publicinputs.BatchCommitmentLo] = new(big.Int).SetBytes(
+		commitment.Lo[:],
+	)
+	return &rebound
 }
 
 func assertEngineTransitionSolved(
