@@ -52,6 +52,80 @@ func TestEvaluateSelectsWinnerAcrossMultipleTicks(t *testing.T) {
 	}
 }
 
+func TestEvaluateRealOrdersPrefersClosestPreBatchSpotAfterFTies(t *testing.T) {
+	orders := []Order{
+		{Slot: 0, Side: protocol.SideBuy, BaseAmount: 10, LimitTick: 20},
+		{Slot: 1, Side: protocol.SideSell, BaseAmount: 10, LimitTick: 10},
+	}
+	preAMM := amm.Reserves{Base: 100, Quote: 1_700}
+
+	candidates, err := EvaluateCandidates(orders, preAMM)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(candidates) != 2 {
+		t.Fatalf("candidate count = %d, want 2", len(candidates))
+	}
+	if candidates[0].Tick != 10 ||
+		candidates[0].ExecutableBase != 20 ||
+		candidates[0].InternalMatched != 10 ||
+		candidates[0].SpotDistance != (Uint128{Low: 600}) {
+		t.Fatalf("tick 10 candidate = %+v", candidates[0])
+	}
+	if candidates[1].Tick != 20 ||
+		candidates[1].ExecutableBase != 20 ||
+		candidates[1].InternalMatched != 10 ||
+		candidates[1].SpotDistance != (Uint128{Low: 400}) {
+		t.Fatalf("tick 20 candidate = %+v", candidates[1])
+	}
+
+	result, err := Evaluate(orders, preAMM)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.ClearingTick != 20 {
+		t.Fatalf("clearing tick = %d, want spot-closer tick 20", result.ClearingTick)
+	}
+}
+
+func TestEvaluateRealOrdersCarriesExecutableFillIntoFirstTieBreak(t *testing.T) {
+	orders := []Order{
+		{Slot: 0, Side: protocol.SideBuy, BaseAmount: 10, LimitTick: 20},
+		{Slot: 1, Side: protocol.SideBuy, BaseAmount: 20, LimitTick: 10},
+		{Slot: 2, Side: protocol.SideSell, BaseAmount: 10, LimitTick: 20},
+	}
+	preAMM := amm.Reserves{Base: 100, Quote: 100}
+
+	candidates, err := EvaluateCandidates(orders, preAMM)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(candidates) != 2 {
+		t.Fatalf("candidate count = %d, want 2", len(candidates))
+	}
+	if candidates[0].Tick != 10 ||
+		candidates[0].ExecutableBase != 30 ||
+		candidates[0].InternalMatched != 0 {
+		t.Fatalf("tick 10 candidate = %+v", candidates[0])
+	}
+	if candidates[1].Tick != 20 ||
+		candidates[1].ExecutableBase != 20 ||
+		candidates[1].InternalMatched != 10 {
+		t.Fatalf("tick 20 candidate = %+v", candidates[1])
+	}
+
+	result, err := Evaluate(orders, preAMM)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.ClearingTick != 10 {
+		t.Fatalf(
+			"clearing tick = %d, want higher-F tick 10 despite lower M",
+			result.ClearingTick,
+		)
+	}
+}
+
 func TestChooseCandidateFirstPrefersHighestExecutableFill(t *testing.T) {
 	winner, ok := ChooseCandidate([]Candidate{
 		{Tick: 1, ExecutableBase: 9, InternalMatched: 8},

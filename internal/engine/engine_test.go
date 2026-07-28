@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"errors"
 	"math"
 	"math/big"
 	"reflect"
@@ -186,6 +187,67 @@ func TestUnderfundedBuyAndSellAndRepeatedReservations(t *testing.T) {
 	}
 }
 
+func TestIsolatedUnderfundedOrdersAreEconomicNoOps(t *testing.T) {
+	tests := []struct {
+		name    string
+		side    protocol.Side
+		prepare func(*state.State)
+	}{
+		{
+			name: "BUY",
+			side: protocol.SideBuy,
+			prepare: func(pre *state.State) {
+				pre.Accounts[0].QuoteBalance = 0
+			},
+		},
+		{
+			name: "SELL",
+			side: protocol.SideSell,
+			prepare: func(pre *state.State) {
+				pre.Accounts[0].BaseBalance = 0
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			pre := state.GenesisFixture()
+			test.prepare(&pre)
+			slots := [protocol.MaxSlots]protocol.Message{
+				orderMessage(0, 0, test.side, 1, 0),
+			}
+			result, err := Execute(pre, batchWithSlots(0, 0, 1, slots))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if result.FundingStatus != ([protocol.MaxSlots]protocol.FundingStatus{
+				protocol.FundingStatusRejectedUnfunded,
+			}) {
+				t.Fatalf("funding statuses = %v", result.FundingStatus)
+			}
+			if result.FilledBaseAmount != ([protocol.MaxSlots]uint64{}) {
+				t.Fatalf("fills = %v, want all zero", result.FilledBaseAmount)
+			}
+			if result.PostState.Accounts != pre.Accounts {
+				t.Fatalf(
+					"accounts changed: post=%#v pre=%#v",
+					result.PostState.Accounts,
+					pre.Accounts,
+				)
+			}
+			if result.PostState.AMM != pre.AMM {
+				t.Fatalf("AMM changed: post=%#v pre=%#v", result.PostState.AMM, pre.AMM)
+			}
+			if result.PostState.Metadata != (state.Metadata{
+				ProcessedBatchCount:   1,
+				ProcessedMessageCount: 1,
+			}) {
+				t.Fatalf("metadata = %#v", result.PostState.Metadata)
+			}
+		})
+	}
+}
+
 func TestSettlementProceedsCannotFundLaterReservation(t *testing.T) {
 	pre := state.GenesisFixture()
 	pre.Accounts[0] = state.Account{BaseBalance: 10}
@@ -342,12 +404,6 @@ func TestExecuteRejectsValidationMetadataAndArithmeticErrors(t *testing.T) {
 		_, err := Execute(state.GenesisFixture(), batch)
 		assertErrorContains(t, err, "start sequence")
 	})
-	t.Run("deposit overflow", func(t *testing.T) {
-		pre := state.GenesisFixture()
-		pre.Accounts[0].BaseBalance = math.MaxUint64
-		_, err := Execute(pre, oneDepositBatch())
-		assertErrorContains(t, err, "overflow")
-	})
 	t.Run("metadata message overflow", func(t *testing.T) {
 		pre := state.GenesisFixture()
 		pre.Metadata.ProcessedMessageCount = math.MaxUint64
@@ -357,19 +413,78 @@ func TestExecuteRejectsValidationMetadataAndArithmeticErrors(t *testing.T) {
 		_, err := Execute(pre, batch)
 		assertErrorContains(t, err, "processed message count")
 	})
-	t.Run("settlement credit overflow", func(t *testing.T) {
-		pre := state.GenesisFixture()
-		pre.Accounts[0] = state.Account{
-			BaseBalance:  math.MaxUint64,
-			QuoteBalance: 1,
+}
+
+func TestGlobalLiabilityCap(t *testing.T) {
+	t.Run("pre liability at cap plus deposit is rejected explicitly", func(t *testing.T) {
+		pre := state.State{
+			AMM: state.AMM{BaseReserve: math.MaxUint64},
 		}
-		pre.Accounts[1] = state.Account{BaseBalance: 1}
+		_, err := Execute(pre, oneDepositBatch())
+		assertGlobalLiabilityCapError(t, err, "pre-state plus batch deposit BASE")
+	})
+
+	t.Run("batch deposits above cap are rejected explicitly", func(t *testing.T) {
 		slots := [protocol.MaxSlots]protocol.Message{
-			orderMessage(0, 0, protocol.SideBuy, 1, 0),
-			orderMessage(1, 1, protocol.SideSell, 1, 0),
+			depositMessage(0, 0, protocol.TokenBase, math.MaxUint64),
+			depositMessage(1, 1, protocol.TokenBase, 1),
 		}
-		_, err := Execute(pre, batchWithSlots(0, 0, 2, slots))
-		assertErrorContains(t, err, "BUY base credit")
+		_, err := Execute(
+			state.State{},
+			batchWithSlots(0, 0, 2, slots),
+		)
+		assertGlobalLiabilityCapError(t, err, "batch deposit BASE")
+	})
+
+	t.Run("pre liability below cap plus deposit reaches exact cap", func(t *testing.T) {
+		pre := state.State{
+			AMM: state.AMM{BaseReserve: math.MaxUint64 - 1},
+		}
+		result, err := Execute(pre, oneDepositBatch())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if result.PostState.Accounts[0].BaseBalance != 1 {
+			t.Fatalf(
+				"account 0 BASE = %d, want 1",
+				result.PostState.Accounts[0].BaseBalance,
+			)
+		}
+		if result.PostState.AMM.BaseReserve != math.MaxUint64-1 {
+			t.Fatalf(
+				"AMM BASE = %d, want %d",
+				result.PostState.AMM.BaseReserve,
+				uint64(math.MaxUint64-1),
+			)
+		}
+		liabilities, err := result.PostState.Liabilities()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if liabilities.Base != math.MaxUint64 {
+			t.Fatalf(
+				"post BASE liability = %d, want %d",
+				liabilities.Base,
+				uint64(math.MaxUint64),
+			)
+		}
+	})
+
+	t.Run("aggregate-invalid pre-state is rejected before transition", func(t *testing.T) {
+		pre := state.State{}
+		pre.Accounts[0].BaseBalance = math.MaxUint64
+		pre.Accounts[1].BaseBalance = 1
+		_, err := Execute(pre, oneDepositBatch())
+		assertGlobalLiabilityCapError(t, err, "pre-state BASE")
+	})
+
+	t.Run("aggregate-invalid post-state is rejected explicitly", func(t *testing.T) {
+		pre := state.State{}
+		post := state.State{}
+		post.Accounts[0].QuoteBalance = math.MaxUint64
+		post.Accounts[1].QuoteBalance = 1
+		err := CheckConservation(pre, post, DepositTotals{})
+		assertGlobalLiabilityCapError(t, err, "post-state QUOTE")
 	})
 }
 
@@ -533,5 +648,21 @@ func assertRootDecimal(t *testing.T, got string, want string) {
 	t.Helper()
 	if got != want {
 		t.Fatalf("root = %s, want %s", got, want)
+	}
+}
+
+func assertGlobalLiabilityCapError(t *testing.T, err error, context string) {
+	t.Helper()
+	if !errors.Is(err, ErrGlobalLiabilityCapExceeded) {
+		t.Fatalf(
+			"error = %v, want errors.Is(..., ErrGlobalLiabilityCapExceeded)",
+			err,
+		)
+	}
+	if strings.Contains(err.Error(), "uint64 overflow") {
+		t.Fatalf("cap violation reported as incidental arithmetic overflow: %v", err)
+	}
+	if !strings.Contains(err.Error(), context) {
+		t.Fatalf("error = %v, want context %q", err, context)
 	}
 }

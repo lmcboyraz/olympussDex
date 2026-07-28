@@ -4,6 +4,7 @@
 package engine
 
 import (
+	"errors"
 	"fmt"
 	"math/big"
 	"math/bits"
@@ -16,9 +17,23 @@ import (
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 )
 
+// ErrGlobalLiabilityCapExceeded identifies a pre-state, deposit set, expected
+// total, or post-state whose per-token aggregate exceeds uint64 maximum.
+var ErrGlobalLiabilityCapExceeded = errors.New("global liability cap exceeded")
+
 type DepositTotals struct {
 	Base  uint64
 	Quote uint64
+}
+
+type wideUint struct {
+	high uint64
+	low  uint64
+}
+
+type wideLiabilities struct {
+	base  wideUint
+	quote wideUint
 }
 
 type Result struct {
@@ -67,6 +82,10 @@ func Execute(pre state.State, batch protocol.Batch) (Result, error) {
 		)
 	}
 
+	deposits, err := validatePreStateAndDeposits(pre, batch)
+	if err != nil {
+		return Result{}, err
+	}
 	oldRoot, err := stateRoot(pre)
 	if err != nil {
 		return Result{}, fmt.Errorf("old state root: %w", err)
@@ -84,12 +103,11 @@ func Execute(pre state.State, batch protocol.Batch) (Result, error) {
 		BatchCommitment: commitment,
 	}
 	activeOrders := make([]reservedOrder, 0, batch.MessageCount)
-	var deposits DepositTotals
 	for slot := 0; slot < int(batch.MessageCount); slot++ {
 		message := batch.Slots[slot]
 		switch message.Type {
 		case protocol.MessageTypeDeposit:
-			if err := applyDeposit(&result.PostState, message, &deposits); err != nil {
+			if err := applyDeposit(&result.PostState, message); err != nil {
 				return Result{}, fmt.Errorf("slot %d deposit: %w", slot, err)
 			}
 		case protocol.MessageTypeOrder:
@@ -202,21 +220,14 @@ func (result Result) PublicInputs() [publicinputs.Count]*big.Int {
 func applyDeposit(
 	post *state.State,
 	message protocol.Message,
-	totals *DepositTotals,
 ) error {
 	account := &post.Accounts[int(message.AccountID)]
 	var err error
 	switch message.TokenID {
 	case protocol.TokenBase:
 		account.BaseBalance, err = checkedAdd(account.BaseBalance, message.DepositAmount)
-		if err == nil {
-			totals.Base, err = checkedAdd(totals.Base, message.DepositAmount)
-		}
 	case protocol.TokenQuote:
 		account.QuoteBalance, err = checkedAdd(account.QuoteBalance, message.DepositAmount)
-		if err == nil {
-			totals.Quote, err = checkedAdd(totals.Quote, message.DepositAmount)
-		}
 	default:
 		return fmt.Errorf("invalid token %d", message.TokenID)
 	}
@@ -376,37 +387,196 @@ func eligible(order clearing.Order, tick uint8) bool {
 }
 
 func CheckConservation(pre state.State, post state.State, deposits DepositTotals) error {
-	preTotals, err := pre.Liabilities()
+	preTotals, err := stateLiabilitiesWide(pre)
 	if err != nil {
 		return fmt.Errorf("pre-state liabilities: %w", err)
 	}
-	postTotals, err := post.Liabilities()
+	if err := validateLiabilityCap("pre-state", preTotals); err != nil {
+		return err
+	}
+	depositTotals := wideLiabilities{
+		base:  wideUint{low: deposits.Base},
+		quote: wideUint{low: deposits.Quote},
+	}
+	if err := validateLiabilityCap("batch deposit", depositTotals); err != nil {
+		return err
+	}
+	expectedTotals, err := addLiabilities(preTotals, depositTotals)
+	if err != nil {
+		return fmt.Errorf("expected liabilities: %w", err)
+	}
+	if err := validateLiabilityCap("pre-state plus batch deposit", expectedTotals); err != nil {
+		return err
+	}
+
+	postTotals, err := stateLiabilitiesWide(post)
 	if err != nil {
 		return fmt.Errorf("post-state liabilities: %w", err)
 	}
-	expectedBase, err := checkedAdd(preTotals.Base, deposits.Base)
-	if err != nil {
-		return fmt.Errorf("expected BASE liabilities: %w", err)
+	if err := validateLiabilityCap("post-state", postTotals); err != nil {
+		return err
 	}
-	expectedQuote, err := checkedAdd(preTotals.Quote, deposits.Quote)
-	if err != nil {
-		return fmt.Errorf("expected QUOTE liabilities: %w", err)
-	}
-	if postTotals.Base != expectedBase {
+	if postTotals.base != expectedTotals.base {
 		return fmt.Errorf(
-			"BASE conservation failed: post=%d expected=%d",
-			postTotals.Base,
-			expectedBase,
+			"BASE conservation failed: post=%s expected=%s",
+			postTotals.base,
+			expectedTotals.base,
 		)
 	}
-	if postTotals.Quote != expectedQuote {
+	if postTotals.quote != expectedTotals.quote {
 		return fmt.Errorf(
-			"QUOTE conservation failed: post=%d expected=%d",
-			postTotals.Quote,
-			expectedQuote,
+			"QUOTE conservation failed: post=%s expected=%s",
+			postTotals.quote,
+			expectedTotals.quote,
 		)
 	}
 	return nil
+}
+
+func validatePreStateAndDeposits(
+	pre state.State,
+	batch protocol.Batch,
+) (DepositTotals, error) {
+	preTotals, err := stateLiabilitiesWide(pre)
+	if err != nil {
+		return DepositTotals{}, fmt.Errorf("pre-state liabilities: %w", err)
+	}
+	if err := validateLiabilityCap("pre-state", preTotals); err != nil {
+		return DepositTotals{}, err
+	}
+
+	depositTotals, err := batchDepositTotalsWide(batch)
+	if err != nil {
+		return DepositTotals{}, fmt.Errorf("batch deposit totals: %w", err)
+	}
+	if err := validateLiabilityCap("batch deposit", depositTotals); err != nil {
+		return DepositTotals{}, err
+	}
+
+	expectedTotals, err := addLiabilities(preTotals, depositTotals)
+	if err != nil {
+		return DepositTotals{}, fmt.Errorf("pre-state plus batch deposit: %w", err)
+	}
+	if err := validateLiabilityCap("pre-state plus batch deposit", expectedTotals); err != nil {
+		return DepositTotals{}, err
+	}
+
+	return DepositTotals{
+		Base:  depositTotals.base.low,
+		Quote: depositTotals.quote.low,
+	}, nil
+}
+
+func stateLiabilitiesWide(value state.State) (wideLiabilities, error) {
+	var totals wideLiabilities
+	var err error
+	for index, account := range value.Accounts {
+		totals.base, err = totals.base.addUint64(account.BaseBalance)
+		if err != nil {
+			return wideLiabilities{}, fmt.Errorf("account %d BASE: %w", index, err)
+		}
+		totals.quote, err = totals.quote.addUint64(account.QuoteBalance)
+		if err != nil {
+			return wideLiabilities{}, fmt.Errorf("account %d QUOTE: %w", index, err)
+		}
+	}
+	totals.base, err = totals.base.addUint64(value.AMM.BaseReserve)
+	if err != nil {
+		return wideLiabilities{}, fmt.Errorf("AMM BASE: %w", err)
+	}
+	totals.quote, err = totals.quote.addUint64(value.AMM.QuoteReserve)
+	if err != nil {
+		return wideLiabilities{}, fmt.Errorf("AMM QUOTE: %w", err)
+	}
+	return totals, nil
+}
+
+func batchDepositTotalsWide(batch protocol.Batch) (wideLiabilities, error) {
+	var totals wideLiabilities
+	for slot := 0; slot < int(batch.MessageCount); slot++ {
+		message := batch.Slots[slot]
+		if message.Type != protocol.MessageTypeDeposit {
+			continue
+		}
+		var err error
+		switch message.TokenID {
+		case protocol.TokenBase:
+			totals.base, err = totals.base.addUint64(message.DepositAmount)
+		case protocol.TokenQuote:
+			totals.quote, err = totals.quote.addUint64(message.DepositAmount)
+		default:
+			return wideLiabilities{}, fmt.Errorf("slot %d invalid token %d", slot, message.TokenID)
+		}
+		if err != nil {
+			return wideLiabilities{}, fmt.Errorf("slot %d: %w", slot, err)
+		}
+	}
+	return totals, nil
+}
+
+func addLiabilities(
+	left wideLiabilities,
+	right wideLiabilities,
+) (wideLiabilities, error) {
+	base, err := left.base.add(right.base)
+	if err != nil {
+		return wideLiabilities{}, fmt.Errorf("BASE: %w", err)
+	}
+	quote, err := left.quote.add(right.quote)
+	if err != nil {
+		return wideLiabilities{}, fmt.Errorf("QUOTE: %w", err)
+	}
+	return wideLiabilities{base: base, quote: quote}, nil
+}
+
+func validateLiabilityCap(stage string, totals wideLiabilities) error {
+	if !totals.base.fitsUint64() {
+		return fmt.Errorf(
+			"%w: %s BASE liability exceeds uint64 maximum",
+			ErrGlobalLiabilityCapExceeded,
+			stage,
+		)
+	}
+	if !totals.quote.fitsUint64() {
+		return fmt.Errorf(
+			"%w: %s QUOTE liability exceeds uint64 maximum",
+			ErrGlobalLiabilityCapExceeded,
+			stage,
+		)
+	}
+	return nil
+}
+
+func (value wideUint) addUint64(other uint64) (wideUint, error) {
+	low, carry := bits.Add64(value.low, other, 0)
+	high, overflow := bits.Add64(value.high, 0, carry)
+	if overflow != 0 {
+		return wideUint{}, fmt.Errorf("uint128 overflow")
+	}
+	return wideUint{high: high, low: low}, nil
+}
+
+func (value wideUint) add(other wideUint) (wideUint, error) {
+	low, carry := bits.Add64(value.low, other.low, 0)
+	high, overflow := bits.Add64(value.high, other.high, carry)
+	if overflow != 0 {
+		return wideUint{}, fmt.Errorf("uint128 overflow")
+	}
+	return wideUint{high: high, low: low}, nil
+}
+
+func (value wideUint) fitsUint64() bool {
+	return value.high == 0
+}
+
+func (value wideUint) String() string {
+	if value.high == 0 {
+		return new(big.Int).SetUint64(value.low).String()
+	}
+	result := new(big.Int).SetUint64(value.high)
+	result.Lsh(result, 64)
+	result.Add(result, new(big.Int).SetUint64(value.low))
+	return result.String()
 }
 
 func stateRoot(value state.State) (fr.Element, error) {

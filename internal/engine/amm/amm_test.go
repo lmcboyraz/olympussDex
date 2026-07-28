@@ -127,6 +127,60 @@ func TestMaximumResidualHandlesUint64BoundariesWithoutWrapping(t *testing.T) {
 	}
 }
 
+func TestMaximumResidualMatchesIndependentBoundedBruteForce(t *testing.T) {
+	const (
+		maxReserve   = uint64(20)
+		maxPrice     = uint64(10)
+		maxRequested = uint64(20)
+	)
+	directions := []Direction{DirectionSellsBase, DirectionBuysBase}
+
+	for base := uint64(0); base <= maxReserve; base++ {
+		for quote := uint64(0); quote <= maxReserve; quote++ {
+			pre := Reserves{Base: base, Quote: quote}
+			for price := uint64(1); price <= maxPrice; price++ {
+				for requested := uint64(0); requested <= maxRequested; requested++ {
+					for _, direction := range directions {
+						got, err := MaximumResidual(
+							pre,
+							price,
+							requested,
+							direction,
+						)
+						if err != nil {
+							t.Fatalf(
+								"MaximumResidual(%+v, price=%d, requested=%d, direction=%d): %v",
+								pre,
+								price,
+								requested,
+								direction,
+								err,
+							)
+						}
+						want := independentBruteForceMaximumResidual(
+							pre,
+							price,
+							requested,
+							direction,
+						)
+						if got != want {
+							t.Fatalf(
+								"MaximumResidual(%+v, price=%d, requested=%d, direction=%d) = %d, want independent brute-force %d",
+								pre,
+								price,
+								requested,
+								direction,
+								got,
+								want,
+							)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 func TestApplyRejectsReserveOverflowAndUnderflow(t *testing.T) {
 	tests := map[string]struct {
 		pre       Reserves
@@ -176,6 +230,46 @@ func TestResidualRejectsInvalidParameters(t *testing.T) {
 	if _, err := MaximumResidual(pre, 1, 1, DirectionNone); err == nil {
 		t.Fatal("NONE direction unexpectedly accepted")
 	}
+}
+
+// independentBruteForceMaximumResidual intentionally does not call
+// MaximumResidual, ValidResidual, Apply, or the production 128-bit product
+// helper. The bounded test domain keeps these direct uint64 operations exact.
+func independentBruteForceMaximumResidual(
+	pre Reserves,
+	price uint64,
+	requested uint64,
+	direction Direction,
+) uint64 {
+	preProduct := pre.Base * pre.Quote
+	var maximum uint64
+	for residual := uint64(0); residual <= requested; residual++ {
+		var post Reserves
+		switch direction {
+		case DirectionSellsBase:
+			if residual > pre.Base {
+				continue
+			}
+			post = Reserves{
+				Base:  pre.Base - residual,
+				Quote: pre.Quote + residual*price,
+			}
+		case DirectionBuysBase:
+			if residual*price > pre.Quote {
+				continue
+			}
+			post = Reserves{
+				Base:  pre.Base + residual,
+				Quote: pre.Quote - residual*price,
+			}
+		default:
+			panic("test oracle received invalid direction")
+		}
+		if post.Base*post.Quote >= preProduct {
+			maximum = residual
+		}
+	}
+	return maximum
 }
 
 func assertResidualMaximal(

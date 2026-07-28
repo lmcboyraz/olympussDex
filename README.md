@@ -98,10 +98,19 @@ AMM, allocates the winning liquidity in strict FIFO order, settles/refunds all
 reservations, updates metadata, and verifies token conservation. Its result
 maps directly to the canonical 27-public-input order.
 
+Every persistent account balance and AMM reserve is a `uint64`. In addition,
+the global aggregate liability for each token—eight account balances plus the
+AMM reserve—is explicitly capped at `uint64` maximum. The engine calculates
+pre-state liabilities, batch deposits, expected liabilities, and post-state
+liabilities with unsigned 128-bit arithmetic before enforcing that cap.
+
 The AMM residual search is logarithmic and all reserve-product comparisons use
 unsigned 128-bit arithmetic. The exact two-batch showcase states, roots,
 commitments, traces, and public inputs are tracked in
-`testdata/engine_vectors.json`.
+`testdata/engine_vectors.json`. Normal tests only read and compare that file;
+only `make generate-engine-vectors` rewrites it. Hand-authored showcase
+assertions independently pin the expected balances, AMM reserves, metadata,
+roots, funding statuses, and fills.
 
 ## Milestone 0 spike constraint
 
